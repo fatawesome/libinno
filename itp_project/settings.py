@@ -25,7 +25,7 @@ SECRET_KEY = 'px7#!*ekjwj7d!kl^8ku#sg@@e=c-rr*yy9n5!jigbxalq4-p*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '[0.0.0.0:8000]']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'inno_lib'
 ]
 
 MIDDLEWARE = [
@@ -76,10 +77,9 @@ WSGI_APPLICATION = 'itp_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'django_db',
-        'USER': 'fatawesome',
-        'PASSWORD': 'fatawesome',
-        'HOST': '127.0.0.1',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
