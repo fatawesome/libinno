@@ -5,6 +5,8 @@ services:
     restart: always
     volumes:
       - ../postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 'test'
   web:
     build: .
     ports:

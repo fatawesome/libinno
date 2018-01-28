@@ -31,13 +31,13 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '[0.0.0.0:8000]']
 # Application definition
 
 INSTALLED_APPS = [
+    'inno_lib',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'inno_lib'
 ]
 
 MIDDLEWARE = [
@@ -77,8 +77,9 @@ WSGI_APPLICATION = 'itp_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'PASSWORD': 'test',
         'HOST': 'db',
         'PORT': '5432',
     }
