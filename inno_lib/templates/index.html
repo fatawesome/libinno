@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>LibInno Home</h1>
+
+  <p>Welcome to <em>LibInno</em>, the best library manage system in Innopolis!</p>
+
+<h2>Content</h2>
+
+  <p>The library has the following record counts:</p>
+  <ul>
+    <li><strong>Documents:</strong> {{ num_docs }}</li>
+    <li><strong>Copies:</strong> {{ num_instances }}</li>
+    <li><strong>Copies available:</strong> {{ num_instances_available }}</li>
+    <li><strong>Authors:</strong> {{ num_authors }}</li>
+  </ul>
+
+{% endblock %}
