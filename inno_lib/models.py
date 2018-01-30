@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 import uuid
 
 
@@ -17,13 +18,19 @@ class Document(models.Model):
         help_text='Add tags for this book',
     )
 
+    def get_absolute_url(self):
+        """
+        :return: the url to access a particular Document instance.
+        """
+        return reverse('book-detail', args=[str(self.id)])
+
     def __str__(self):
         return self.title
 
 
 class DocumentInstance(models.Model):
     """
-    Model representing a specific copy of a Document
+    Model representing a specific copy of a Document (that can be borrowed from the library).
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text="Unique id for this particular document")
     document = models.ForeignKey('Document', on_delete=models.SET_NULL, null=True)
@@ -69,13 +76,19 @@ class Author(models.Model):
     class Meta:
         ordering = ["last_name", "first_name"]
 
+    def get_absolute_url(self):
+        """
+        :return: the url to access a particular Author.
+        """
+        return reverse('author-detail', args=str(self.id))
+
     def __str__(self):
         return '{0}, {1}'.format(self.first_name, self.last_name)
 
 
 class Tag(models.Model):
     """
-    Model representing a Tag (e.g. 'funny', 'scary' etc.)
+    Model representing a Tag (e.g. 'funny', 'scary' etc.).
     """
     name = models.CharField(max_length=100)
 
