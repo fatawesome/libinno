@@ -54,16 +54,6 @@ class DocumentInstance(models.Model):
         return '{0} ({1})'.format(self.id, self.document.title)
 
 
-class Genre(models.Model):
-    """
-    Model representing a Genre.
-    """
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
 class Author(models.Model):
     """
     Model representing an Author

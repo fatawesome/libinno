@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('inno_lib/', include('inno_lib.urls')),
+    path('', include('inno_lib.urls')),
     path('admin/', admin.site.urls),
+    # path('', include('reg_auth.urls')),
+    path('reg_auth/', include('reg_auth.urls')),
 ]
