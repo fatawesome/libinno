@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from django.views import generic
 
-from .models import Document, Author, DocumentInstance
+from inno_lib.models.document_models import Document, DocumentInstance
+from inno_lib.models.author import Author
 
 
 def index(request):
@@ -23,3 +25,11 @@ def index(request):
                  'num_instances_available': num_instances_available,
                  'num_authors': num_authors, 'num_visits': num_visits},
     )
+
+
+class DocumentListView(generic.ListView):
+    model = Document
+
+
+class DocumentDetailView(generic.DetailView):
+    model = Document

@@ -19,6 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path('', include('inno_lib.urls')),
     path('admin/', admin.site.urls),
-    # path('', include('reg_auth.urls')),
     path('reg_auth/', include('reg_auth.urls')),
 ]
