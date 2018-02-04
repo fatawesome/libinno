@@ -1,8 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import generic
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
+from django.contrib.auth.decorators import permission_required
 
 from inno_lib.models.document_models import Document, DocumentInstance
 from inno_lib.models.author import Author
+from .forms import RenewDocumentForm
+
+import datetime
 
 
 def index(request):
@@ -28,8 +36,67 @@ def index(request):
 
 
 class DocumentListView(generic.ListView):
+    """
+    Generic class-based view listing all documents in the system.
+    """
     model = Document
 
 
 class DocumentDetailView(generic.DetailView):
+    """
+    Generic class-based view the particular document page.
+    """
     model = Document
+
+
+class LoanedDocumentsByUserListView(LoginRequiredMixin, generic.ListView):
+    """
+    Generic class-based view listing documents to the current user.
+    """
+    model = DocumentInstance
+    template_name = 'inno_lib/documentinstance_list_borrowed_user.html'
+
+    def get_queryset(self):
+        return DocumentInstance.objects.filter(borrower=self.request.user).filter(status__exact='o').order_by('due_back')
+
+
+@permission_required('inno_lib.can_mark_returned')
+def renew_document_librarian(requset, pk):
+    """
+    Functional view describing the logic of renewing document instance by librarian.
+    :param requset: HTTP request.
+    :param pk: primary key for the DocumentInstance (truly, UUID).
+    :return: rendered HTML.
+    """
+    docinst = get_object_or_404(DocumentInstance, pk=pk)
+
+    # If this is a POST request then process the Form data
+    if requset.method == 'POST':
+
+        # Create a form instance and populate it with data from the request (binding):
+        form = RenewDocumentForm(requset.POST)
+
+        # Check if the form is valid:
+        if form.is_valid():
+            docinst.due_back = form.cleaned_data['renewal_date']
+            docinst.save()
+            return HttpResponseRedirect(reverse('all-borrowed'))
+
+    # If this is a GET (or any other method) create the default form.
+    else:
+        proposed_renewal_date = datetime.date.today() + datetime.timedelta(weeks=2)
+        form = RenewDocumentForm(initial={'renewal_date': proposed_renewal_date,})
+
+    return render(requset, 'inno_lib/document_renew_librarian.html', {'form': form, 'docinst': docinst})
+
+
+class BorrowedBooksForLibrarianListView(PermissionRequiredMixin, generic.ListView):
+    """
+    Genereic class-based view listing all borrowed documents to the librarian.
+    """
+    permission_required = 'inno_lib.can_mark_returned'
+    model = DocumentInstance
+    template_name = 'inno_lib/documentinstance_list_borrowed_librarian.html'
+
+    def get_queryset(self):
+        return DocumentInstance.objects.filter(status__exact='o').order_by('due_back')
