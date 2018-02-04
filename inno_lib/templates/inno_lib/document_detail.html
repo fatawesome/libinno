@@ -16,6 +16,8 @@
     {% if copy.status != 'a' %}<p><strong>Due to be returned:</strong> {{copy.due_back}}</p>{% endif %}
     <p><strong>Imprint:</strong> {{copy.imprint}}</p>
     <p class="text-muted"><strong>Id:</strong> {{copy.id}}</p>
+        {% if copy.status == 'a' %}<a class="btn btn-success" href="{% url 'claim-document' copy.id %}">Claim</a> {% endif %}
+        {% if copy.status == 'o' %}<a class="btn btn-primary" href="{% url 'return-document' copy.id %}">Return</a> {% endif %}
     {% endfor %}
 
   </div>

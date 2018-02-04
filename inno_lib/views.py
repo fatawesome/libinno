@@ -100,3 +100,50 @@ class BorrowedBooksForLibrarianListView(PermissionRequiredMixin, generic.ListVie
 
     def get_queryset(self):
         return DocumentInstance.objects.filter(status__exact='o').order_by('due_back')
+
+
+def get_due_delta(user, document_instance):
+    return datetime.timedelta(weeks=3)
+
+
+def claim_document(request, pk):
+    instance = DocumentInstance.objects.get(id=pk)
+
+    if instance is None:
+        raise ValueError('No document instance with id {}'.format(pk))
+
+    if instance.status != 'a':
+        raise ValueError('Document {} is not available for loan (has status {})'.format(pk, instance.status))
+
+    instance.status = 'o'
+    instance.borrower = request.user
+    instance.due_back = datetime.date.today() + get_due_delta(request.user, instance)
+    
+    instance.save()
+
+    # TODO: fix XSS
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+# todo: this shouldn't be pushed
+def return_document(request, pk):
+    instance = DocumentInstance.objects.get(id=pk)
+
+    if instance is None:
+        raise ValueError('No document instance with id {}'.format(pk))
+
+    if instance.status != 'o':
+        raise ValueError('Document {} is not on loan (has status{})'.format(pk, instance.status))
+
+    if instance.borrower.id != request.user.id:
+        raise ValueError('Document {} is not borrowed by current user (current user id: {}, borrowed user id: {})'
+                         .format(pk, request.user.id, instance.borrower.id))
+
+    instance.status = 'a'
+    instance.borrower = None
+    instance.due_back = None
+
+    instance.save()
+
+    # TODO: fix XSS
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
