@@ -10,7 +10,7 @@ class Document(models.Model):
     Model representing any Document in a system (but not a specific copy of one).
     """
     title = models.CharField(max_length=100)
-    price = models.IntegerField
+    price = models.IntegerField(default=0)
     authors = models.ManyToManyField(
         'Author',
         help_text='Add authors for this book',
@@ -42,6 +42,12 @@ class Document(models.Model):
         :return: string of tags
         """
         return ''.join([tag.name for tag in self.tags.all()])
+
+    def display_price(self):
+        """
+        :return: string representation of price.
+        """
+        return self.price
 
 
 class Book(Document):
@@ -80,6 +86,7 @@ class DocumentInstance(models.Model):
 
     class Meta:
         ordering = ["due_back"]
+        permissions = (('can_mark_returned', 'Set book as returned'),)
 
     def __str__(self):
         """

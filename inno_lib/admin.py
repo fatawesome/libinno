@@ -1,5 +1,5 @@
 from django.contrib import admin
-from inno_lib.models.document_models import Document, DocumentInstance
+from inno_lib.models.document_models import Document, DocumentInstance, Book, Article
 from inno_lib.models.author import Author
 from inno_lib.models.tag import Tag
 
@@ -16,12 +16,18 @@ class DocumentInstanceInline(admin.TabularInline):
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('title', 'display_authors', 'display_tags')
+    list_display = ('title', 'display_price', 'display_authors', 'display_tags')
     inlines = [DocumentInstanceInline]
+
+
+@admin.register(Book)
+class BookAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(DocumentInstance)
 class DocumentInstanceAdmin(admin.ModelAdmin):
+    list_display = ('document', 'status', 'borrower', 'due_back', 'id')
     list_filter = ('status', 'due_back')
 
     fieldsets = (
@@ -29,7 +35,7 @@ class DocumentInstanceAdmin(admin.ModelAdmin):
             'fields': ('document', 'imprint', 'id')
         }),
         ('Availability', {
-            'fields': ('status', 'due_back')
+            'fields': ('status', 'borrower', 'due_back')
         })
     )
 

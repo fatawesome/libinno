@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Borrowed documents</h1>
+
+    {% if documentinstance_list %}
+    <ul>
+
+      {% for docinst in documentinstance_list %}
+      <li class="{% if docinst.is_overdue %}text-danger{% endif %}">
+        <a href="{% url 'document-detail' docinst.document.id %}">{{docinst.document.title}}</a> ({{ docinst.due_back }})
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% else %}
+      <p>There are no documents borrowed.</p>
+    {% endif %}
+{% endblock %}
