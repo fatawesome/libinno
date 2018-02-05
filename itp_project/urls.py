@@ -16,8 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-urlpatterns = [
-    path('', include('inno_lib.urls')),
-    path('admin/', admin.site.urls),
-    path('reg_auth/', include('reg_auth.urls')),
+urlpatterns = [ # add links to pages:
+    path('', include('inno_lib.urls')), # init page
+    path('admin/', admin.site.urls), # admin mode
+    path('reg_auth/', include('reg_auth.urls')), # authorization page
 ]
