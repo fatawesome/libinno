@@ -32,7 +32,7 @@ class DocumentInstanceAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('document', 'imprint', 'id')
+            'fields': ('document', 'id')
         }),
         ('Availability', {
             'fields': ('status', 'borrower', 'due_back')

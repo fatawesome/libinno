@@ -40,6 +40,7 @@ class DocumentListView(generic.ListView):
     Generic class-based view listing all documents in the system.
     """
     model = Document
+    paginate_by = 5
 
 
 class DocumentDetailView(generic.DetailView):
@@ -49,12 +50,14 @@ class DocumentDetailView(generic.DetailView):
     model = Document
 
 
+# TODO: redirect to login page if not logged in
 class LoanedDocumentsByUserListView(LoginRequiredMixin, generic.ListView):
     """
     Generic class-based view listing documents to the current user.
     """
     model = DocumentInstance
     template_name = 'inno_lib/documentinstance_list_borrowed_user.html'
+    paginate_by = 5
 
     def get_queryset(self):
         return DocumentInstance.objects.filter(borrower=self.request.user).filter(status__exact='o').order_by('due_back')
@@ -102,11 +105,17 @@ class BorrowedBooksForLibrarianListView(PermissionRequiredMixin, generic.ListVie
         return DocumentInstance.objects.filter(status__exact='o').order_by('due_back')
 
 
-def get_due_delta(user, document_instance):
-    return datetime.timedelta(weeks=3)
+# def get_due_delta(user, document_instance):
+#     return datetime.timedelta(weeks=3)
 
 
 def claim_document(request, pk):
+    """
+    Function-based view that allows authorized user to borrow a document.
+    :param request:
+    :param pk:
+    :return:
+    """
     instance = DocumentInstance.objects.get(id=pk)
 
     if instance is None:
@@ -117,8 +126,9 @@ def claim_document(request, pk):
 
     instance.status = 'o'
     instance.borrower = request.user
-    instance.due_back = datetime.date.today() + get_due_delta(request.user, instance)
-    
+    # instance.due_back = datetime.date.today() + get_due_delta(request.user, instance)
+    instance.due_back = datetime.date.today() + instance.get_due_delta()
+
     instance.save()
 
     # TODO: fix XSS

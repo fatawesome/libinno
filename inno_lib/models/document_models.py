@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from datetime import date
 import uuid
+import datetime
 
 
 class Document(models.Model):
@@ -55,12 +56,22 @@ class Book(Document):
     Model represents general book.
     """
     publisher = models.CharField(max_length=100)
-    edition = models.IntegerField
+    edition = models.IntegerField(default=1)
 
 
 class Article(Document):
     editor = models.CharField(max_length=100)
     journal = models.CharField(max_length=100)
+
+
+# TODO: need to decide how to store files in database, then implement next 2 classes
+
+class Audio(Document):
+    content = models.CharField(max_length=200)
+
+
+class Video(Document):
+    content = models.CharField(max_length=200)
 
 
 class DocumentInstance(models.Model):
@@ -70,7 +81,7 @@ class DocumentInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4,
                           help_text='Unique ID for this book for the whole lib')
     document = models.ForeignKey('Document', on_delete=models.SET_NULL, null=True)
-    imprint = models.CharField(max_length=200)
+    # imprint = models.CharField(max_length=200)
     due_back = models.DateField(null=True, blank=True)
     borrower = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -99,3 +110,9 @@ class DocumentInstance(models.Model):
         if self.due_back and date.today() > self.due_back:
             return True
         return False
+
+    def get_due_delta(self):
+        if 'Students' in self.borrower.groups.all():
+            return datetime.timedelta(weeks=2)
+        else:
+            return datetime.timedelta(weeks=3)
