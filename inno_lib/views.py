@@ -18,9 +18,9 @@ def index(request):
     View function for home page of site.
     """
     num_docs = Document.objects.all().count()
-    num_instances = DocumentInstance.objects.all().count()
-    num_instances_available = DocumentInstance.objects.filter(status__exact='a').count()
-    num_authors = Author.objects.count()
+    num_instances = DocumentInstance.objects.all().count() # number of copies of this document
+    num_instances_available = DocumentInstance.objects.filter(status__exact='a').count() # number of available copies of this document
+    num_authors = Author.objects.count() # number of authors
 
     # Number of visit to this view, as counted in session variable.
     num_visits = request.session.get('num_visits', 0)
@@ -109,23 +109,23 @@ class BorrowedBooksForLibrarianListView(PermissionRequiredMixin, generic.ListVie
 #     return datetime.timedelta(weeks=3)
 
 
-def claim_document(request, pk):
+def claim_document(request, pk): # Claim the document with id = pk
     """
     Function-based view that allows authorized user to borrow a document.
     :param request:
     :param pk:
     :return:
     """
-    instance = DocumentInstance.objects.get(id=pk)
+    instance = DocumentInstance.objects.get(id=pk) # Find such instance
 
-    if instance is None:
-        raise ValueError('No document instance with id {}'.format(pk))
+    if instance is None: # If there's no such instance
+        raise ValueError('No document instance with id {}'.format(pk)) # ERROR
 
-    if instance.status != 'a':
-        raise ValueError('Document {} is not available for loan (has status {})'.format(pk, instance.status))
+    if instance.status != 'a': # If this instance is not available now
+        raise ValueError('Document {} is not available for loan (has status {})'.format(pk, instance.status)) # ERROR (We cannot claim it)
 
-    instance.status = 'o'
-    instance.borrower = request.user
+    instance.status = 'o' # Set current status as 'On loan'
+    instance.borrower = request.user # set current user as borrower
     # instance.due_back = datetime.date.today() + get_due_delta(request.user, instance)
     instance.due_back = datetime.date.today() + instance.get_due_delta()
 
@@ -136,22 +136,22 @@ def claim_document(request, pk):
 
 
 # todo: this shouldn't be pushed
-def return_document(request, pk):
+def return_document(request, pk):  # return the document with id = pk
     instance = DocumentInstance.objects.get(id=pk)
 
-    if instance is None:
-        raise ValueError('No document instance with id {}'.format(pk))
+    if instance is None: # If there's no such document
+        raise ValueError('No document instance with id {}'.format(pk)) # ERROR
 
-    if instance.status != 'o':
-        raise ValueError('Document {} is not on loan (has status{})'.format(pk, instance.status))
+    if instance.status != 'o': # If this docunment is not 'On loan'
+        raise ValueError('Document {} is not on loan (has status{})'.format(pk, instance.status)) # We cannot return 'on loan' document
 
-    if instance.borrower.id != request.user.id:
-        raise ValueError('Document {} is not borrowed by current user (current user id: {}, borrowed user id: {})'
+    if instance.borrower.id != request.user.id: # if user doesn't coincide the book
+        raise ValueError('Document {} is not borrowed by current user (current user id: {}, borrowed user id: {})' # ERROR
                          .format(pk, request.user.id, instance.borrower.id))
 
-    instance.status = 'a'
-    instance.borrower = None
-    instance.due_back = None
+    instance.status = 'a' # Set statuc of current document as 'Available'
+    instance.borrower = None # Remove borrower
+    instance.due_back = None # Remove deadline
 
     instance.save()
 
