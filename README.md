@@ -1,9 +1,9 @@
-# libinno
+# LibInno
 First year bachelor's project in Innopolis University (Spring 2018)
 
 # How to run
-In docker_libinno run
-    `$ docker-compose up`
+1. Install docker.
+2. in docker_libinno run `$ docker-compose up`
 
 If django doesn't run server automatically you need to do it manually:
 1. In new terminal `$ docker exec -it <container> /bin/sh`
