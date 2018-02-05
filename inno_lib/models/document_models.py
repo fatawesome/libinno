@@ -106,13 +106,13 @@ class DocumentInstance(models.Model):
         return '{0} ({1})'.format(self.id, self.document.title)
 
     @property
-    def is_overdue(self):
+    def is_overdue(self): # Check if current document if overdue
         if self.due_back and date.today() > self.due_back:
             return True
         return False
 
-    def get_due_delta(self):
-        if 'Students' in self.borrower.groups.all():
+    def get_due_delta(self): # deadline depends on type of user
+        if 'Students' in self.borrower.groups.all(): # For students
             return datetime.timedelta(weeks=2)
         else:
-            return datetime.timedelta(weeks=3)
+            return datetime.timedelta(weeks=3) # For faculties
