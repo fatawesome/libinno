@@ -1,45 +1,68 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
-from django.utils import timezone
-from django.contrib.auth.models import User
-import datetime
-import uuid
+from django.contrib.auth.models import User, Group
 
-from inno_lib.models.document_models import DocumentInstance, Document
+from inno_lib.models.document_models import Book, DocumentInstance, Document
 from inno_lib.models.author import Author
+
+import datetime
 
 
 class ClaimDocumentTest(TestCase):
-
     def setUp(self):
-        test_user1 = User.objects.create_user(username='testuser1', password='test')
-        test_user1.save()
+        self.group_faculty = Group(name='Faculty')
+        self.group_faculty.save()
+        self.group_students = Group(name='Students')
+        self.group_students.save()
+        self.user = User.objects.create_user(username='test', password='test', email='test@test.com')
 
-        test_author = Author.objects.create(first_name='John', last_name='Doe')
-        test_author.save()
-        test_document = Document.objects.create(title='Test title')
-        authors_for_document = Author.objects.all()
-        test_document.authors.set(authors_for_document)
-        test_document.save()
-
-        DocumentInstance.objects.create(document=test_document, status='a')
-
-    def test_borrowing_redirects(self):
-        login = self.client.login(username='testuser1', password='test')
-        test_uid = DocumentInstance.objects.first().id
-        resp = self.client.post(reverse('claim-document', kwargs={'pk': test_uid, }))
-        self.assertEqual(resp.status_code, 302)
+        Author.objects.create(first_name='test', last_name='test')
+        self.book = Book.objects.create(title='test', is_bestseller=True)
+        self.book.authors.set(Author.objects.all())
 
     def test_borrowing_borrows(self):
-        doc_inst = DocumentInstance.objects.first()
-        login = self.client.login(username='testuser1', password='test')
-        test_uid = doc_inst.id
-        resp = self.client.post(reverse('claim-document', kwargs={'pk': test_uid, }))
-        doc_inst = DocumentInstance.objects.first()
+        """
+        Tests that view actually works.
+        """
+        self.user.groups.add(self.group_faculty)
+        self.user.save()
+        self.client.login(username='test', password='test')
 
-        self.assertEqual(doc_inst.status, 'o')
+        book_inst = DocumentInstance.objects.create(document=Book.objects.first(), status='a')
+        response = self.client.post(reverse('claim-document', kwargs={'pk': book_inst.id}))
+        book_inst = DocumentInstance.objects.first()
 
+        self.assertEqual(book_inst.status, 'o')
 
+    def test_faculty_checkout_book_4_weeks(self):
+        """
+        Faculty user should borrow book for 4 weeks.
+        Test-case 4.
+        """
+        self.user.groups.add(self.group_faculty)
+        self.user.save()
+        self.client.login(username='test', password='test')
 
+        book_inst = DocumentInstance.objects.create(document=Book.objects.first(), status='a')
+        response = self.client.post(reverse('claim-document', kwargs={'pk': book_inst.id}))
+        book_inst = DocumentInstance.objects.first()
+        date = datetime.date.today()
 
+        self.assertEqual(book_inst.due_back, date + datetime.timedelta(weeks=4))
 
+    def test_stundent_checkout_bestseller_2_weeks(self):
+        """
+        Student user should borrow best-selling book for 2 weeks.
+        Test-case 9
+        """
+        self.user.groups.add(self.group_students)
+        self.user.save()
+        self.client.login(username='test', password='test')
+
+        book_inst = DocumentInstance.objects.create(document=Book.objects.first(), status='a')
+        response = self.client.post(reverse('claim-document', kwargs={'pk': book_inst.id}))
+        book_inst = DocumentInstance.objects.first()
+        date = datetime.date.today()
+
+        # self.assertTrue(book_inst.document.book.is_bestseller)
+        self.assertEqual(book_inst.due_back, date + datetime.timedelta(weeks=2))

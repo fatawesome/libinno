@@ -3,9 +3,9 @@
 {% block content %}
   <h1>Title: {{ document.title }}</h1>
 
-  <p><strong>Author:</strong> <a href="">{{ document.author }}</a></p> <!-- author detail link not yet defined -->
+  <p><strong>Author:</strong> <a href=""> {% for author in document.authors.all %} {{ author }} {% if not forloop.last %}, {% endif %}{% endfor %}</a></p> <!-- author detail link not yet defined -->
   <p><strong>Tags:</strong> {% for tag in document.tags.all %} {{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-  <p><strong>Price:</strong> {{ document.price.value_from_object }}</p>
+  <p><strong>Price:</strong> {{ document.price }}</p>
 
   <div style="margin-left:20px;margin-top:20px">
     <h4>Copies</h4>

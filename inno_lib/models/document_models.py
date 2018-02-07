@@ -2,6 +2,10 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
 from datetime import date
+
+from inno_lib.models.author import Author
+from inno_lib.models.tag import Tag
+
 import uuid
 import datetime
 
@@ -13,11 +17,11 @@ class Document(models.Model):
     title = models.CharField(max_length=100)
     price = models.IntegerField(default=0)
     authors = models.ManyToManyField(
-        'Author',
+        Author,
         help_text='Add authors for this book',
     )
     tags = models.ManyToManyField(
-        'Tag',
+        Tag,
         help_text='Add tags for this book',
     )
 
@@ -57,6 +61,7 @@ class Book(Document):
     """
     publisher = models.CharField(max_length=100)
     edition = models.IntegerField(default=1)
+    is_bestseller = models.BooleanField(default=False)
 
 
 class Article(Document):
@@ -80,7 +85,7 @@ class DocumentInstance(models.Model):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4,
                           help_text='Unique ID for this book for the whole lib')
-    document = models.ForeignKey('Document', on_delete=models.SET_NULL, null=True)
+    document = models.ForeignKey(Document, on_delete=models.SET_NULL, null=True)
     # imprint = models.CharField(max_length=200)
     due_back = models.DateField(null=True, blank=True)
     borrower = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -112,7 +117,18 @@ class DocumentInstance(models.Model):
         return False
 
     def get_due_delta(self): # deadline depends on type of user
-        if 'Students' in self.borrower.groups.all(): # For students
-            return datetime.timedelta(weeks=2)
+        delta = 0
+        if getattr(self.document, 'book') is not None:
+            if self.borrower.groups.first().name == 'Faculty':
+                delta = 4
+            elif self.document.book.is_bestseller:
+                delta = 2
+            else:
+                delta = 3
         else:
-            return datetime.timedelta(weeks=3) # For faculties
+            if self.borrower.groups.first().name == 'Students':  # For students
+                delta = 2
+            else:
+                delta = 3
+
+        return datetime.timedelta(weeks=delta)

@@ -124,6 +124,7 @@ def claim_document(request, pk): # Claim the document with id = pk
     if instance.status != 'a': # If this instance is not available now
         raise ValueError('Document {} is not available for loan (has status {})'.format(pk, instance.status)) # ERROR (We cannot claim it)
 
+
     instance.status = 'o' # Set current status as 'On loan'
     instance.borrower = request.user # set current user as borrower
     # instance.due_back = datetime.date.today() + get_due_delta(request.user, instance)
@@ -135,7 +136,7 @@ def claim_document(request, pk): # Claim the document with id = pk
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-# todo: this shouldn't be pushed
+# TODO: this shouldn't be pushed
 def return_document(request, pk):  # return the document with id = pk
     instance = DocumentInstance.objects.get(id=pk)
 
