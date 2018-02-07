@@ -1,8 +1,10 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
-
+      
+     
 import datetime
+
 
 
 class RenewDocumentForm(forms.Form):
@@ -17,4 +19,4 @@ class RenewDocumentForm(forms.Form):
         if data > datetime.date.today() + datetime.timedelta(weeks=3):
             raise ValidationError(_('Invalid date - renewal more than 3 weeks ahead'))
 
-        return data
+        return data 
